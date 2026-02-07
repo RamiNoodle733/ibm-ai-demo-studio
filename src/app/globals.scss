@@ -203,6 +203,33 @@ body {
     }
   }
 
+  &__content {
+    p {
+      margin: 0.375rem 0;
+      line-height: 1.5;
+      &:first-child {
+        margin-top: 0;
+      }
+      &:last-child {
+        margin-bottom: 0;
+      }
+    }
+
+    ul, ol {
+      padding-left: 1.25rem;
+      margin: 0.5rem 0;
+
+      li {
+        margin-bottom: 0.25rem;
+        line-height: 1.5;
+      }
+    }
+
+    strong {
+      font-weight: 600;
+    }
+  }
+
   &__citations {
     margin-top: 0.5rem;
     padding-top: 0.5rem;

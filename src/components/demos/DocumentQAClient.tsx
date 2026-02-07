@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from "react";
 import { Button, TextInput, Tile, Tag, InlineLoading } from "@carbon/react";
 import { Send, DocumentBlank, Checkmark } from "@carbon/icons-react";
+import React from "react";
 
 interface DocInfo {
   id: string;
@@ -23,6 +24,85 @@ const SUGGESTED_QUESTIONS = [
   "How does the pricing model work?",
   "What integrations are available?",
 ];
+
+function formatInline(str: string): React.ReactNode[] {
+  const parts: React.ReactNode[] = [];
+  const regex = /\*\*(.+?)\*\*/g;
+  let lastIndex = 0;
+  let match;
+  while ((match = regex.exec(str)) !== null) {
+    if (match.index > lastIndex) {
+      parts.push(str.slice(lastIndex, match.index));
+    }
+    parts.push(<strong key={`b-${match.index}`}>{match[1]}</strong>);
+    lastIndex = regex.lastIndex;
+  }
+  if (lastIndex < str.length) {
+    parts.push(str.slice(lastIndex));
+  }
+  return parts.length > 0 ? parts : [str];
+}
+
+function renderMarkdown(text: string): React.ReactNode[] {
+  const lines = text.split("\n");
+  const elements: React.ReactNode[] = [];
+  let listItems: React.ReactNode[] = [];
+  let listType: "ul" | "ol" | null = null;
+
+  const flushList = () => {
+    if (listItems.length > 0 && listType) {
+      const ListTag = listType;
+      elements.push(
+        <ListTag key={`list-${elements.length}`} style={{ paddingLeft: "1.25rem", margin: "0.5rem 0" }}>
+          {listItems}
+        </ListTag>
+      );
+      listItems = [];
+      listType = null;
+    }
+  };
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    const trimmed = line.trim();
+
+    if (!trimmed) {
+      flushList();
+      continue;
+    }
+
+    const bulletMatch = trimmed.match(/^[-*]\s+(.+)/);
+    const numberedMatch = trimmed.match(/^\d+\.\s+(.+)/);
+
+    if (bulletMatch) {
+      if (listType !== "ul") flushList();
+      listType = "ul";
+      listItems.push(
+        <li key={`li-${i}`} style={{ marginBottom: "0.25rem", lineHeight: 1.5 }}>
+          {formatInline(bulletMatch[1])}
+        </li>
+      );
+    } else if (numberedMatch) {
+      if (listType !== "ol") flushList();
+      listType = "ol";
+      listItems.push(
+        <li key={`li-${i}`} style={{ marginBottom: "0.25rem", lineHeight: 1.5 }}>
+          {formatInline(numberedMatch[1])}
+        </li>
+      );
+    } else {
+      flushList();
+      elements.push(
+        <p key={`p-${i}`} style={{ margin: "0.375rem 0", lineHeight: 1.5 }}>
+          {formatInline(trimmed)}
+        </p>
+      );
+    }
+  }
+
+  flushList();
+  return elements;
+}
 
 export function DocumentQAClient({ preloadedDocs, demoId }: { preloadedDocs: DocInfo[]; demoId: string }) {
   const [messages, setMessages] = useState<Message[]>([]);
@@ -118,7 +198,11 @@ export function DocumentQAClient({ preloadedDocs, demoId }: { preloadedDocs: Doc
           )}
           {messages.map((msg, i) => (
             <div key={i} className={`chat-message chat-message--${msg.role}`}>
-              <p>{msg.content}</p>
+              {msg.role === "assistant" ? (
+                <div className="chat-message__content">{renderMarkdown(msg.content)}</div>
+              ) : (
+                <p>{msg.content}</p>
+              )}
               {msg.citations && msg.citations.length > 0 && (
                 <div className="chat-message__citations">
                   {msg.citations.map((c, j) => (
