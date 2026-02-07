@@ -50,6 +50,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(result);
   } catch (error) {
     console.error("Summarization error:", error);
-    return NextResponse.json({ error: "Failed to summarize data" }, { status: 500 });
+    const message = error instanceof Error ? error.message : "Failed to summarize data";
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }

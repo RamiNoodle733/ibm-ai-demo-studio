@@ -42,6 +42,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(result);
   } catch (error) {
     console.error("Classification error:", error);
-    return NextResponse.json({ error: "Failed to classify texts" }, { status: 500 });
+    const message = error instanceof Error ? error.message : "Failed to classify texts";
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }

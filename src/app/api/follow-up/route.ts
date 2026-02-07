@@ -87,8 +87,9 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ followUp: { ...followUp, ...result } });
   } catch (error) {
     console.error("Follow-up generation error:", error);
+    const message = error instanceof Error ? error.message : "Failed to generate follow-up";
     return NextResponse.json(
-      { error: "Failed to generate follow-up" },
+      { error: message },
       { status: 500 }
     );
   }

@@ -57,10 +57,11 @@ export function DocumentQAClient({ preloadedDocs, demoId }: { preloadedDocs: Doc
         ...prev,
         { role: "assistant", content: data.answer, citations: data.citations },
       ]);
-    } catch {
+    } catch (err) {
+      const errorMsg = err instanceof Error ? err.message : "Unknown error";
       setMessages((prev) => [
         ...prev,
-        { role: "assistant", content: "Sorry, an error occurred. Please try again." },
+        { role: "assistant", content: `Error: ${errorMsg}` },
       ]);
     } finally {
       setLoading(false);

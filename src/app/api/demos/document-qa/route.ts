@@ -55,6 +55,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ answer, citations });
   } catch (error) {
     console.error("Document QA error:", error);
-    return NextResponse.json({ error: "Failed to process question" }, { status: 500 });
+    const message = error instanceof Error ? error.message : "Failed to process question";
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }
