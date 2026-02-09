@@ -1,7 +1,7 @@
 "use client";
 
 import { Theme } from "@carbon/react";
-import { createContext, useContext, useState, useCallback } from "react";
+import { createContext, useContext, useState, useCallback, useEffect } from "react";
 
 const ThemeContext = createContext<{
   dark: boolean;
@@ -13,7 +13,17 @@ export function useThemeContext() {
 }
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [dark, setDark] = useState(false);
+  const [dark, setDark] = useState(() => {
+    if (typeof window !== "undefined") {
+      return localStorage.getItem("theme") === "dark";
+    }
+    return false;
+  });
+
+  useEffect(() => {
+    localStorage.setItem("theme", dark ? "dark" : "light");
+  }, [dark]);
+
   const toggle = useCallback(() => setDark((d) => !d), []);
 
   return (
