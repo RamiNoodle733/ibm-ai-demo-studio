@@ -28,3 +28,6 @@ Thumbs.db
 # Misc
 *.tsbuildinfo
 next-env.d.ts
+
+# Private
+DEMO_SCRIPT.md
