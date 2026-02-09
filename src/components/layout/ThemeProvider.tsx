@@ -13,16 +13,22 @@ export function useThemeContext() {
 }
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [dark, setDark] = useState(() => {
-    if (typeof window !== "undefined") {
-      return localStorage.getItem("theme") === "dark";
-    }
-    return false;
-  });
+  const [dark, setDark] = useState(false);
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    localStorage.setItem("theme", dark ? "dark" : "light");
-  }, [dark]);
+    const saved = localStorage.getItem("theme");
+    if (saved === "dark") {
+      setDark(true);
+    }
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (mounted) {
+      localStorage.setItem("theme", dark ? "dark" : "light");
+    }
+  }, [dark, mounted]);
 
   const toggle = useCallback(() => setDark((d) => !d), []);
 

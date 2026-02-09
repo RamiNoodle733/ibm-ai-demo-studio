@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { Button, TextArea, Tile, Tag, InlineLoading, Tabs, TabList, Tab, TabPanels, TabPanel } from "@carbon/react";
-import { Analytics, Play } from "@carbon/icons-react";
+import { Play } from "@carbon/icons-react";
 
 interface ClassificationResult {
   text: string;
