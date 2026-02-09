@@ -591,6 +591,42 @@ body {
   }
 }
 
+// ── Custom tabs (replaces Carbon Tabs for reliability) ──
+.custom-tabs {
+  display: flex;
+  gap: 0;
+  border-bottom: 2px solid var(--cds-border-subtle, #e0e0e0);
+}
+
+.custom-tab {
+  padding: 0.75rem 1.25rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  font-family: inherit;
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -2px;
+  color: var(--cds-text-secondary, #525252);
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s;
+
+  &:hover:not(:disabled) {
+    color: var(--cds-text-primary, #161616);
+  }
+
+  &--selected {
+    color: var(--cds-text-primary, #161616);
+    border-bottom-color: var(--cds-interactive, #0f62fe);
+    font-weight: 600;
+  }
+
+  &:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+}
+
 // ── Upload zone ──
 .upload-zone {
   border: 2px dashed var(--cds-border-subtle, #e0e0e0);

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Button, TextArea, Tile, Tag, InlineLoading, Tabs, TabList, Tab, TabPanels, TabPanel } from "@carbon/react";
+import { Button, TextArea, Tile, Tag, InlineLoading } from "@carbon/react";
 import { Play } from "@carbon/icons-react";
 
 interface ClassificationResult {
@@ -32,6 +32,8 @@ export function TextClassificationClient({ demoId }: { demoId: string }) {
   const [input, setInput] = useState("");
   const [results, setResults] = useState<ClassificationResult[]>([]);
   const [loading, setLoading] = useState(false);
+  const [activeTab, setActiveTab] = useState(0);
+  const [error, setError] = useState<string | null>(null);
 
   const loadSampleData = async () => {
     try {
@@ -47,6 +49,7 @@ export function TextClassificationClient({ demoId }: { demoId: string }) {
   const classify = async () => {
     if (!input.trim()) return;
     setLoading(true);
+    setError(null);
     try {
       const texts = input.split("\n---\n").map((t) => t.trim()).filter(Boolean);
       const res = await fetch("/api/demos/text-classification", {
@@ -55,9 +58,13 @@ export function TextClassificationClient({ demoId }: { demoId: string }) {
         body: JSON.stringify({ texts }),
       });
       const data = await res.json();
+      if (!res.ok || data.error) {
+        throw new Error(data.error || "Classification failed");
+      }
       setResults(data.classifications || []);
-    } catch {
-      console.error("Classification failed");
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : "Classification failed";
+      setError(msg);
     } finally {
       setLoading(false);
     }
@@ -74,13 +81,29 @@ export function TextClassificationClient({ demoId }: { demoId: string }) {
   }, {} as Record<string, number>);
 
   return (
-    <Tabs>
-      <TabList aria-label="Classification tabs">
-        <Tab>Input</Tab>
-        <Tab disabled={results.length === 0}>Insights Dashboard</Tab>
-      </TabList>
-      <TabPanels>
-        <TabPanel>
+    <div>
+      <div className="custom-tabs" role="tablist" aria-label="Classification tabs">
+        <button
+          role="tab"
+          aria-selected={activeTab === 0}
+          className={`custom-tab ${activeTab === 0 ? "custom-tab--selected" : ""}`}
+          onClick={() => setActiveTab(0)}
+        >
+          Input
+        </button>
+        <button
+          role="tab"
+          aria-selected={activeTab === 1}
+          className={`custom-tab ${activeTab === 1 ? "custom-tab--selected" : ""}`}
+          onClick={() => results.length > 0 && setActiveTab(1)}
+          disabled={results.length === 0}
+        >
+          Insights Dashboard
+        </button>
+      </div>
+
+      {activeTab === 0 && (
+        <div role="tabpanel" style={{ paddingTop: "1rem" }}>
           <div style={{ marginBottom: "1rem" }}>
             <Button kind="ghost" size="sm" onClick={loadSampleData}>
               Load Sample Tickets
@@ -99,6 +122,12 @@ export function TextClassificationClient({ demoId }: { demoId: string }) {
               {loading ? <InlineLoading description="Classifying..." /> : "Classify Text"}
             </Button>
           </div>
+
+          {error && (
+            <Tile style={{ marginTop: "1rem", padding: "1rem", background: "var(--cds-support-error)" }}>
+              <p style={{ color: "#fff" }}>{error}</p>
+            </Tile>
+          )}
 
           {results.length > 0 && (
             <div style={{ marginTop: "1.5rem" }}>
@@ -122,8 +151,11 @@ export function TextClassificationClient({ demoId }: { demoId: string }) {
               ))}
             </div>
           )}
-        </TabPanel>
-        <TabPanel>
+        </div>
+      )}
+
+      {activeTab === 1 && results.length > 0 && (
+        <div role="tabpanel" style={{ paddingTop: "1rem" }}>
           <div className="metric-cards">
             <Tile className="metric-card">
               <div className="metric-card__label">Total Classified</div>
@@ -167,8 +199,8 @@ export function TextClassificationClient({ demoId }: { demoId: string }) {
               </div>
             </div>
           </div>
-        </TabPanel>
-      </TabPanels>
-    </Tabs>
+        </div>
+      )}
+    </div>
   );
 }
